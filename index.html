@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>&#x798F;&#x58FD;&#x87BA;&#x5F88;&#x591A;</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="game">
+      <section class="layout">
+        <section class="field-panel">
+          <section class="field" aria-label="&#x798F;&#x58FD;&#x87BA;&#x7530;&#x5340;">
+            <div class="field-ridge">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <section class="board" id="board" aria-label="&#x904A;&#x6232;&#x5340;">
+          <button class="hole" type="button" data-index="0" aria-label="&#x6D1E;&#x53E3; 1">
+            <span class="hole-water" aria-hidden="true"></span>
+            <span class="snail" aria-hidden="true">
+              <span class="snail-shell"></span>
+              <span class="snail-body"></span>
+              <span class="snail-eye snail-eye-left"></span>
+              <span class="snail-eye snail-eye-right"></span>
+            </span>
+          </button>
+          <button class="hole" type="button" data-index="1" aria-label="&#x6D1E;&#x53E3; 2">
+            <span class="hole-water" aria-hidden="true"></span>
+            <span class="snail" aria-hidden="true">
+              <span class="snail-shell"></span>
+              <span class="snail-body"></span>
+              <span class="snail-eye snail-eye-left"></span>
+              <span class="snail-eye snail-eye-right"></span>
+            </span>
+          </button>
+          <button class="hole" type="button" data-index="2" aria-label="&#x6D1E;&#x53E3; 3">
+            <span class="hole-water" aria-hidden="true"></span>
+            <span class="snail" aria-hidden="true">
+              <span class="snail-shell"></span>
+              <span class="snail-body"></span>
+              <span class="snail-eye snail-eye-left"></span>
+              <span class="snail-eye snail-eye-right"></span>
+            </span>
+          </button>
+          <button class="hole" type="button" data-index="3" aria-label="&#x6D1E;&#x53E3; 4">
+            <span class="hole-water" aria-hidden="true"></span>
+            <span class="snail" aria-hidden="true">
+              <span class="snail-shell"></span>
+              <span class="snail-body"></span>
+              <span class="snail-eye snail-eye-left"></span>
+              <span class="snail-eye snail-eye-right"></span>
+            </span>
+          </button>
+          <button class="hole" type="button" data-index="4" aria-label="&#x6D1E;&#x53E3; 5">
+            <span class="hole-water" aria-hidden="true"></span>
+            <span class="snail" aria-hidden="true">
+              <span class="snail-shell"></span>
+              <span class="snail-body"></span>
+              <span class="snail-eye snail-eye-left"></span>
+              <span class="snail-eye snail-eye-right"></span>
+            </span>
+          </button>
+          <button class="hole" type="button" data-index="5" aria-label="&#x6D1E;&#x53E3; 6">
+            <span class="hole-water" aria-hidden="true"></span>
+            <span class="snail" aria-hidden="true">
+              <span class="snail-shell"></span>
+              <span class="snail-body"></span>
+              <span class="snail-eye snail-eye-left"></span>
+              <span class="snail-eye snail-eye-right"></span>
+            </span>
+          </button>
+          <button class="hole" type="button" data-index="6" aria-label="&#x6D1E;&#x53E3; 7">
+            <span class="hole-water" aria-hidden="true"></span>
+            <span class="snail" aria-hidden="true">
+              <span class="snail-shell"></span>
+              <span class="snail-body"></span>
+              <span class="snail-eye snail-eye-left"></span>
+              <span class="snail-eye snail-eye-right"></span>
+            </span>
+          </button>
+          <button class="hole" type="button" data-index="7" aria-label="&#x6D1E;&#x53E3; 8">
+            <span class="hole-water" aria-hidden="true"></span>
+            <span class="snail" aria-hidden="true">
+              <span class="snail-shell"></span>
+              <span class="snail-body"></span>
+              <span class="snail-eye snail-eye-left"></span>
+              <span class="snail-eye snail-eye-right"></span>
+            </span>
+          </button>
+          <button class="hole" type="button" data-index="8" aria-label="&#x6D1E;&#x53E3; 9">
+            <span class="hole-water" aria-hidden="true"></span>
+            <span class="snail" aria-hidden="true">
+              <span class="snail-shell"></span>
+              <span class="snail-body"></span>
+              <span class="snail-eye snail-eye-left"></span>
+              <span class="snail-eye snail-eye-right"></span>
+            </span>
+          </button>
+            </section>
+          </section>
+        </section>
+
+        <aside class="sidebar">
+          <section class="hero">
+            <header class="hud">
+              <div class="hero-copy">
+                <p class="eyebrow">&#x53F0;&#x7063;&#x7530;&#x57C2;&#x9632;&#x885B;&#x6230;</p>
+                <h1>&#x798F;&#x58FD;&#x87BA;&#x5F88;&#x591A;</h1>
+                <p class="intro">
+                  &#x5728;&#x7A3B;&#x7530;&#x908A;&#x9650;&#x6642;&#x958B;&#x6253;&#xFF0C;&#x628A;&#x5192;&#x51FA;&#x4F86;&#x7684;&#x798F;&#x58FD;&#x87BA;&#x901A;&#x901A;&#x6253;&#x56DE;&#x6CE5;&#x6C34;&#x88E1;&#x3002;
+                </p>
+                <div class="hero-meta">
+                  <p class="version" id="version">&#x7248;&#x672C; v0.10.0</p>
+                  <p class="origin">&#x53F0;&#x7063;&#x98A8;&#x5473; 2D &#x7530;&#x9593;&#x7248;</p>
+                </div>
+              </div>
+              <div class="controls-row">
+                <button id="startButton" type="button">&#x958B;&#x59CB;&#x904A;&#x6232;</button>
+                <button id="pauseButton" class="secondary-button" type="button" disabled>
+                  &#x66AB;&#x505C;
+                </button>
+                <label class="care-switch" for="careModeToggle">
+                  <span class="care-switch-label">&#x9577;&#x8F29;&#x6A21;&#x5F0F;</span>
+                  <span class="care-switch-note">&#x653E;&#x6162;&#x7BC0;&#x594F;</span>
+                  <span class="care-switch-track">
+                    <input id="careModeToggle" type="checkbox" />
+                    <span class="care-switch-thumb" aria-hidden="true"></span>
+                  </span>
+                </label>
+              </div>
+            </header>
+
+            <label class="patrol-picker" for="patrolArea">
+              <span class="patrol-picker-label">&#x4ECA;&#x5929;&#x5DE1;&#x54EA;&#x4E00;&#x5340;</span>
+              <select id="patrolArea"></select>
+              <span class="patrol-picker-note" id="patrolAreaNote">&#x9078;&#x4E00;&#x584A;&#x7530;&#xFF0C;&#x6162;&#x6162;&#x5DE1;&#x3002;</span>
+            </label>
+
+            <section class="stats" aria-label="&#x904A;&#x6232;&#x8CC7;&#x8A0A;">
+              <p class="stat">
+                <span class="stat-label">&#x5206;&#x6578;</span>
+                <strong id="score">0</strong>
+              </p>
+              <p class="stat">
+                <span class="stat-label">&#x6700;&#x9AD8;&#x5206;</span>
+                <strong id="bestScore">0</strong>
+              </p>
+              <p class="stat">
+                <span class="stat-label">&#x6642;&#x9593;</span>
+                <strong><span id="time">30</span> &#x79D2;</strong>
+              </p>
+              <p class="stat">
+                <span class="stat-label">&#x672C;&#x5340;&#x6700;&#x9AD8;</span>
+                <strong id="areaBest">0</strong>
+              </p>
+              <p class="stat">
+                <span class="stat-label">&#x5DE1;&#x7530;&#x6B21;&#x6578;</span>
+                <strong id="patrolCount">0</strong>
+              </p>
+            </section>
+            <p class="reward-note" id="rewardNote" aria-live="polite">
+              &#x5B8C;&#x6210;&#x4E00;&#x8F2A;&#x5DE1;&#x7530;&#x5F8C;&#xFF0C;&#x9019;&#x88E1;&#x6703;&#x7559;&#x4E0B;&#x4ECA;&#x5929;&#x7684;&#x5B88;&#x7530;&#x7D00;&#x9304;&#x3002;
+            </p>
+            <p class="visually-hidden" id="status" aria-live="polite">&#x6309;&#x4E0B;&#x958B;&#x59CB;&#x904A;&#x6232;&#x3002;</p>
+          </section>
+
+          <aside class="support-card" aria-live="polite" aria-label="&#x5B9C;&#x862D;&#x8FB2;&#x53CB;&#x63A8;&#x85A6;">
+            <p class="support-label">&#x5DE1;&#x7530;&#x4E5F;&#x633A;&#x5C0F;&#x8FB2;</p>
+            <h2 class="support-name" id="farmerName">&#x8F09;&#x5165;&#x5B9C;&#x862D;&#x8FB2;&#x53CB;&#x8CC7;&#x6599;&#x4E2D;</h2>
+            <p class="support-products" id="farmerProducts">&#x6B63;&#x5728;&#x5411;&#x8FB2;&#x696D;&#x90E8;&#x516C;&#x958B;&#x8CC7;&#x6599;&#x53D6;&#x8CC7;&#x6599;&#x3002;</p>
+            <dl class="support-details">
+              <div>
+                <dt>&#x5730;&#x5340;</dt>
+                <dd id="farmerLocation">&#x5B9C;&#x862D;&#x7E23;</dd>
+              </div>
+              <div>
+                <dt>&#x806F;&#x7D61;</dt>
+                <dd id="farmerTel">&#x8F09;&#x5165;&#x4E2D;</dd>
+              </div>
+            </dl>
+            <p class="support-status" id="farmerStatus">&#x904A;&#x6232;&#x9032;&#x884C;&#x6642;&#x6703;&#x63DB;&#x4E0A;&#x4E0D;&#x540C;&#x8FB2;&#x53CB;&#x3002;</p>
+            <a
+              class="support-map"
+              id="farmerMap"
+              href="https://www.google.com/maps/search/?api=1&amp;query=%E5%AE%9C%E8%98%AD%E7%B8%A3"
+              target="_blank"
+              rel="noreferrer"
+            >
+              &#x6253;&#x958B; Google &#x5730;&#x5716;&#x8DEF;&#x7DDA;
+            </a>
+            <p class="support-source">
+              &#x8CC7;&#x6599;&#x4F86;&#x6E90;
+              <a
+                id="farmerSource"
+                href="https://data.moa.gov.tw/Service/OpenData/ODwsv/ODwsvAttractions.aspx?IsTransData=1&amp;UnitId=D45"
+                target="_blank"
+                rel="noreferrer"
+              >
+                &#x8FB2;&#x696D;&#x90E8;&#x6709;&#x6A5F;&#x8FB2;&#x696D;&#x8CC7;&#x8A0A;
+              </a>
+            </p>
+          </aside>
+        </aside>
+      </section>
+    </main>
+
+    <script src="./regions/yilan.js"></script>
+    <script src="./farmer-support.js"></script>
+    <script src="./game-core.js"></script>
+    <script src="./game.js"></script>
+  </body>
+</html>
