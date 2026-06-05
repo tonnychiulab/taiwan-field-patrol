@@ -4,7 +4,11 @@
 
 ## 線上頁面
 
-GitHub Pages 可以直接使用 repository root 發布，因為專案入口就是 `index.html`。
+已發布在 GitHub Pages：
+
+https://tonnychiulab.github.io/taiwan-field-patrol/
+
+GitHub Pages 使用 repository root 發布，因為專案入口就是 `index.html`。
 
 設定方式：
 
