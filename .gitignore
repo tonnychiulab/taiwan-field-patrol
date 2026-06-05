@@ -1,0 +1,22 @@
+# OS and editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Local secrets
+.env
+.env.*
+
+# Logs and temporary files
+*.log
+*.tmp
+tmp/
+temp/
+
+# Dependency and build output folders, if contributors add local tooling
+node_modules/
+dist/
+build/
+coverage/

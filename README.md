@@ -2,6 +2,18 @@
 
 一個用原生 HTML/CSS/JS 做的小型打擊福壽螺遊戲。專案目標是維持低技術門檻，讓想推廣台灣在地小農的人可以一起擴充地區資料與畫面風格。
 
+## 線上頁面
+
+GitHub Pages 可以直接使用 repository root 發布，因為專案入口就是 `index.html`。
+
+設定方式：
+
+1. 到 GitHub repository 的 Settings。
+2. 打開 Pages。
+3. Source 選 `Deploy from a branch`。
+4. Branch 選 `master`，資料夾選 `/root`。
+5. 儲存後等待 GitHub 產生頁面網址。
+
 ## 技術範圍
 
 - 不使用框架、打包器或新的相依套件。
@@ -107,3 +119,14 @@
 - 補強子區域關鍵字，讓山區、海線、離島與偏遠聚落不會被縣市層級抹平。
 - 以 CSS 變數擴充地方風格，但避免引入新的樣式系統。
 - 保持遊戲核心簡單，除非有明確需求，不要把地區資料邏輯寫進 `game-core.js`。
+
+## Repo Hygiene
+
+- `LICENSE`：MIT License。
+- `.gitignore`：排除 OS、editor、暫存檔、log、環境變數與可能的 build output。
+- `.nojekyll`：讓 GitHub Pages 以純靜態網站方式發布，不套 Jekyll 處理。
+- `favicon.svg`：瀏覽器分頁圖示，保留田地與福壽螺意象。
+
+## 授權
+
+本專案使用 MIT License。詳見 `LICENSE`。
