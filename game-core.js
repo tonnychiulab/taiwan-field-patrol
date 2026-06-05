@@ -26,6 +26,7 @@
     let lastHole = -1;
     let gameRunning = false;
     let gamePaused = false;
+    let pausedByVisibility = false;
     let tickTimer = 0;
     let spawnTimer = 0;
     let hitTimer = 0;
@@ -247,16 +248,61 @@
       }
 
       if (gamePaused) {
+        pausedByVisibility = false;
         startGame(false);
         return;
       }
 
       gamePaused = true;
+      pausedByVisibility = false;
       stopTimers();
       nodes.status.textContent = "先歇一下，等你準備好再繼續巡田。";
       nodes.startButton.disabled = false;
-      nodes.startButton.textContent = "重新開始";
+      nodes.startButton.textContent = "繼續遊戲";
       updateControlState();
+    }
+
+    function pauseForVisibility() {
+      if (!gameRunning || gamePaused) {
+        return;
+      }
+
+      gamePaused = true;
+      pausedByVisibility = true;
+      stopTimers();
+      nodes.status.textContent = "畫面先切走了，已幫你暫停，回來再繼續巡田。";
+      nodes.startButton.disabled = false;
+      nodes.startButton.textContent = "繼續遊戲";
+      updateControlState();
+    }
+
+    function handleStartButtonClick() {
+      startGame(!gamePaused);
+    }
+
+    function handleKeydown(event) {
+      if (event.code !== "Space") {
+        return;
+      }
+
+      const activeElement = document.activeElement;
+      const isInteractiveTarget =
+        activeElement &&
+        (activeElement.tagName === "BUTTON" ||
+          activeElement.tagName === "SELECT" ||
+          activeElement.tagName === "INPUT");
+
+      if (isInteractiveTarget) {
+        return;
+      }
+
+      event.preventDefault();
+      if (gameRunning) {
+        togglePause();
+        return;
+      }
+
+      startGame(true);
     }
 
     function handleHit(hole, index) {
@@ -294,14 +340,25 @@
       holes.forEach((hole, index) => {
         hole.addEventListener("click", () => handleHit(hole, index));
       });
-      nodes.startButton.addEventListener("click", () => startGame(true));
+      nodes.startButton.addEventListener("click", handleStartButtonClick);
       nodes.pauseButton.addEventListener("click", togglePause);
       nodes.careModeToggle.addEventListener("change", syncModeState);
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+          pauseForVisibility();
+          return;
+        }
+
+        if (pausedByVisibility && gamePaused) {
+          nodes.status.textContent = "你回來了，按繼續就能接著巡田。";
+        }
+      });
       nodes.patrolArea.addEventListener("change", () => {
         support.setSubregion(nodes.patrolArea.value);
         nodes.rewardNote.textContent = `今天巡 ${support.getCurrentSubregion().name}，完成後會留下本區紀錄。`;
         render();
       });
+      document.addEventListener("keydown", handleKeydown);
       nodes.version.textContent = `版本 ${version}`;
       support.setupSubregions();
       syncModeState();
