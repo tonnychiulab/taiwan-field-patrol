@@ -5,7 +5,15 @@
       id: "plain",
       name: "蘭陽平原",
       description: "宜蘭、羅東、員山、冬山、三星、五結一帶的稻田與農村。",
-      keywords: ["宜蘭市", "羅東鎮", "員山鄉", "冬山鄉", "三星鄉", "五結鄉"],
+      keywords: [
+        "宜蘭市",
+        "羅東鎮",
+        "員山鄉",
+        "冬山鄉",
+        "三星鄉",
+        "五結鄉",
+        "礁溪鄉",
+      ],
       mapQuery: "宜蘭縣 蘭陽平原",
     },
     {
@@ -37,6 +45,12 @@
     )}`;
   }
 
+  function buildSubregionMapUrl(subregion) {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+      subregion.mapQuery
+    )}`;
+  }
+
   function findSubregion(address) {
     return (
       subregions.find((subregion) =>
@@ -47,7 +61,7 @@
 
   function normalizeFarmer(entry, helpers) {
     const name = helpers.sanitizeText(entry.Name, "");
-    const products = helpers.sanitizeText(entry.Product, "");
+    const products = helpers.sanitizeText(entry.Products || entry.Product, "");
     const address = helpers.sanitizeText(entry.Address || entry.MailingAddress, "");
 
     if (!name || !address.includes(yilanCounty)) {
@@ -77,10 +91,10 @@
     defaultSubregionId: "plain",
     subregions,
     dataUrl:
-      "https://data.moa.gov.tw/Service/OpenData/ODwsv/ODwsvAttractions.aspx?IsTransData=1&UnitId=D45",
+      "https://data.moa.gov.tw/Service/OpenData/Traceability/TraceabilityOrganic.aspx?IsTransData=1&UnitId=D45&$filter=Address%20like%20宜蘭縣",
     source: {
       label: "農業部有機農業資訊",
-      url: "https://data.moa.gov.tw/Service/OpenData/ODwsv/ODwsvAttractions.aspx?IsTransData=1&UnitId=D45",
+      url: "https://data.gov.tw/dataset/49444",
     },
     recommendation: {
       rotateEveryHits: 3,
@@ -101,6 +115,7 @@
       mapUrl: "https://www.google.com/maps/search/?api=1&query=%E5%AE%9C%E8%98%AD%E7%B8%A3",
     },
     buildMapUrl,
+    buildSubregionMapUrl,
     normalizeFarmer,
   };
 })(window.Fushouluo || (window.Fushouluo = {}));

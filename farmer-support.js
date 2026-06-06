@@ -28,6 +28,7 @@
     let allFarmers = [];
     let farmers = [];
     let currentFarmerIndex = -1;
+    let loadState = "idle";
 
     const helpers = {
       sanitizeText,
@@ -37,7 +38,8 @@
     function updateNavigationState() {
       const total = farmers.length;
       if (!total) {
-        nodes.count.textContent = "目前沒有可輪播資料";
+        nodes.count.textContent =
+          loadState === "loading" ? "資料載入中" : "本區目前沒有可輪播資料";
         nodes.prev.disabled = true;
         nodes.next.disabled = true;
         return;
@@ -79,6 +81,43 @@
       updateNavigationState();
     }
 
+    function getSubregionMapUrl() {
+      const subregion = getCurrentSubregion();
+      if (region.buildSubregionMapUrl) {
+        return region.buildSubregionMapUrl(subregion);
+      }
+
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        subregion.mapQuery || `${region.county} ${subregion.name}`
+      )}`;
+    }
+
+    function renderLoading() {
+      const subregion = getCurrentSubregion();
+      nodes.name.textContent = `載入${subregion.name}農友資料中`;
+      nodes.products.textContent = region.loading.products;
+      nodes.location.textContent = `${region.county} ${subregion.name}`;
+      nodes.tel.textContent = region.loading.tel;
+      nodes.status.textContent = region.loading.status;
+      nodes.map.href = getSubregionMapUrl();
+      nodes.source.href = region.source.url;
+      nodes.source.textContent = region.source.label;
+      updateNavigationState();
+    }
+
+    function renderEmptySubregion() {
+      const subregion = getCurrentSubregion();
+      nodes.name.textContent = `${subregion.name}目前沒有可顯示的農友資料`;
+      nodes.products.textContent = "主力作物：官方公開資料目前沒有本區名單";
+      nodes.location.textContent = `${region.county} ${subregion.name}`;
+      nodes.tel.textContent = "官方資料未提供";
+      nodes.status.textContent = "可切換其他巡田區，或開啟地圖看看本區。";
+      nodes.map.href = getSubregionMapUrl();
+      nodes.source.href = region.source.url;
+      nodes.source.textContent = region.source.label;
+      updateNavigationState();
+    }
+
     function getCurrentSubregion() {
       return (
         region.subregions.find((subregion) => subregion.id === currentSubregionId) ||
@@ -104,14 +143,26 @@
     }
 
     function applySubregionFilter() {
-      const selected = allFarmers.filter((farmer) => farmer.subregionId === currentSubregionId);
-      farmers = selected.length ? shuffle(selected) : shuffle(allFarmers);
+      farmers = [];
       currentFarmerIndex = -1;
+
+      if (loadState === "loading" || loadState === "idle") {
+        renderLoading();
+        return;
+      }
+
+      if (loadState === "error") {
+        renderFallback();
+        return;
+      }
+
+      const selected = allFarmers.filter((farmer) => farmer.subregionId === currentSubregionId);
+      farmers = shuffle(selected);
 
       if (farmers.length) {
         rotate(true);
       } else {
-        renderFallback();
+        renderEmptySubregion();
       }
     }
 
@@ -156,11 +207,8 @@
     }
 
     async function load() {
-      renderFallback();
-      nodes.name.textContent = region.loading.name;
-      nodes.products.textContent = region.loading.products;
-      nodes.tel.textContent = region.loading.tel;
-      nodes.status.textContent = region.loading.status;
+      loadState = "loading";
+      applySubregionFilter();
 
       try {
         const response = await fetcher(region.dataUrl, {
@@ -181,8 +229,10 @@
           throw new Error(`No ${region.name} farmers in dataset`);
         }
 
+        loadState = "loaded";
         applySubregionFilter();
       } catch {
+        loadState = "error";
         allFarmers = [];
         farmers = [];
         currentFarmerIndex = -1;

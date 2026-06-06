@@ -92,7 +92,10 @@ node tests/game-logic.test.js
     normalizeFarmer(entry, helpers) {
       return {
         name: helpers.sanitizeText(entry.Name, ""),
-        products: helpers.sanitizeText(entry.Product, "以官方資料為準"),
+        products: helpers.sanitizeText(
+          entry.Products || entry.Product,
+          "以官方資料為準"
+        ),
         address: helpers.sanitizeText(entry.Address, ""),
         location: helpers.shortenText(entry.Address, "範例縣市", 26),
         subregionId: "plain",

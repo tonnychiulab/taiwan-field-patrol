@@ -9,6 +9,8 @@ require(path.join(__dirname, "..", "game-engine.js"));
 require(path.join(__dirname, "..", "game-storage.js"));
 require(path.join(__dirname, "..", "game-input.js"));
 require(path.join(__dirname, "..", "game-core.js"));
+require(path.join(__dirname, "..", "farmer-support.js"));
+require(path.join(__dirname, "..", "regions", "yilan.js"));
 
 const app = global.window.Fushouluo;
 
@@ -134,12 +136,16 @@ function createClassList() {
 
 function createNode() {
   const listeners = {};
+  const children = [];
   return {
     checked: false,
     classList: createClassList(),
     disabled: false,
     textContent: "",
     value: "plain",
+    append(child) {
+      children.push(child);
+    },
     addEventListener(type, listener) {
       listeners[type] = listener;
     },
@@ -147,6 +153,100 @@ function createNode() {
       listeners[type](event || { target: this });
     },
   };
+}
+
+function createFarmerNodes() {
+  return {
+    patrolArea: createNode(),
+    patrolAreaNote: createNode(),
+    name: createNode(),
+    products: createNode(),
+    location: createNode(),
+    tel: createNode(),
+    status: createNode(),
+    prev: createNode(),
+    next: createNode(),
+    count: createNode(),
+    map: { href: "" },
+    source: { href: "", textContent: "" },
+  };
+}
+
+function testYilanNormalization() {
+  const region = app.regions.yilan;
+  const farmer = region.normalizeFarmer(
+    {
+      Name: "測試有機農場",
+      Products: "米、短期葉菜",
+      Address: "宜蘭縣頭城鎮測試路1號",
+      Tel: "03-000-0000",
+    },
+    {
+      sanitizeText(value, fallback) {
+        return String(value || "").trim() || fallback;
+      },
+      shortenText(value) {
+        return value;
+      },
+    }
+  );
+
+  assert.equal(farmer.products, "米、短期葉菜");
+  assert.equal(farmer.subregionId, "coast");
+  assert.match(region.dataUrl, /TraceabilityOrganic/);
+  assert.match(region.dataUrl, /Address%20like%20宜蘭縣/);
+}
+
+async function testFarmerSubregionRefresh() {
+  const nodes = createFarmerNodes();
+  const entries = [
+    {
+      Name: "平原農友",
+      Products: "米",
+      Address: "宜蘭縣三星鄉平原路1號",
+    },
+    {
+      Name: "海線農友",
+      Products: "根莖菜",
+      Address: "宜蘭縣頭城鎮海線路1號",
+    },
+  ];
+  let releasePayload;
+  const payloadReady = new Promise((resolve) => {
+    releasePayload = resolve;
+  });
+  const support = app.createFarmerSupport({
+    region: app.regions.yilan,
+    nodes,
+    fetcher: async () => ({
+      ok: true,
+      json: async () => payloadReady,
+    }),
+  });
+
+  global.document = {
+    createElement() {
+      return createNode();
+    },
+  };
+
+  support.setupSubregions();
+  const loadPromise = support.load();
+  support.setSubregion("coast");
+  assert.equal(nodes.name.textContent, "載入海線農村農友資料中");
+  assert.equal(nodes.count.textContent, "資料載入中");
+
+  releasePayload(entries);
+  await loadPromise;
+  assert.equal(nodes.name.textContent, "海線農友");
+  assert.equal(nodes.products.textContent, "主力作物：根莖菜");
+
+  support.setSubregion("mountain");
+  assert.equal(nodes.name.textContent, "山區聚落目前沒有可顯示的農友資料");
+  assert.match(nodes.location.textContent, /山區聚落/);
+
+  support.setSubregion("plain");
+  assert.equal(nodes.name.textContent, "平原農友");
 }
 
 function testGameControllerIntegration() {
@@ -242,10 +342,18 @@ function testGameControllerIntegration() {
   assert.equal(nodes.score.textContent, "2");
 }
 
-testEngineRound();
-testEnginePauseAndMode();
-testStorageFallbackAndSave();
-testKeyboardInput();
-testGameControllerIntegration();
+async function run() {
+  testEngineRound();
+  testEnginePauseAndMode();
+  testStorageFallbackAndSave();
+  testKeyboardInput();
+  testYilanNormalization();
+  await testFarmerSubregionRefresh();
+  testGameControllerIntegration();
+  console.log("game logic tests passed");
+}
 
-console.log("game logic tests passed");
+run().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

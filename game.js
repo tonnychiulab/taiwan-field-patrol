@@ -1,5 +1,5 @@
 (function bootstrap(app) {
-  const gameVersion = "v0.12.0";
+  const gameVersion = "v0.12.1";
   const regionPack = app.regions.yilan;
 
   const farmerSupport = app.createFarmerSupport({
