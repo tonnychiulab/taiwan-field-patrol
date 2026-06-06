@@ -78,6 +78,40 @@
   cursor: default;
 }
 
+.encouragement-dialog {
+  width: min(90vw, 520px);
+  border: 2px solid rgba(83, 61, 35, 0.2);
+  border-radius: 28px;
+  padding: 30px;
+  background: #fffaf0;
+  color: var(--ink);
+  text-align: center;
+  box-shadow: 0 24px 70px rgba(45, 61, 28, 0.28);
+}
+
+.encouragement-dialog::backdrop {
+  background: rgba(34, 46, 24, 0.48);
+}
+
+.encouragement-dialog p {
+  margin: 0 0 24px;
+  font-size: clamp(2rem, 7vw, 3.5rem);
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.encouragement-dialog button {
+  min-width: 140px;
+  min-height: 54px;
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 28px;
+  background: linear-gradient(180deg, #7aaf4d, #527e31);
+  color: #fffef7;
+  font-weight: 800;
+  cursor: pointer;
+}
+
 .controls-row {
   display: flex;
   flex-wrap: wrap;

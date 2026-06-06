@@ -55,8 +55,12 @@ function testEnginePauseAndMode() {
   assert.equal(engine.getState().timeLeft, 45);
 
   engine.start();
+  assert.equal(engine.setMode("normal"), false);
+  assert.equal(engine.getState().modeKey, "care");
+  assert.equal(engine.getState().timeLeft, 45);
   engine.spawn();
   assert.equal(engine.pause(), true);
+  assert.equal(engine.setMode("normal"), false);
   assert.equal(engine.getState().activeHole, -1);
   assert.equal(engine.tick().ended, false);
   assert.equal(engine.getState().timeLeft, 45);
@@ -150,6 +154,7 @@ function createNode() {
     disabled: false,
     focused: false,
     hidden: false,
+    open: false,
     tabIndex: 0,
     textContent: "",
     value: "plain",
@@ -161,6 +166,12 @@ function createNode() {
     },
     focus() {
       this.focused = true;
+    },
+    close() {
+      this.open = false;
+    },
+    showModal() {
+      this.open = true;
     },
     getAttribute(name) {
       return attributes[name];
@@ -349,11 +360,15 @@ function testGameControllerIntegration() {
     rewardNote: createNode(),
     startButton: createNode(),
     pauseButton: createNode(),
+    finishButton: createNode(),
     supportPrev: createNode(),
     supportNext: createNode(),
     patrolArea: createNode(),
     version: createNode(),
     careModeToggle: createNode(),
+    encouragementDialog: createNode(),
+    encouragementText: createNode(),
+    encouragementClose: createNode(),
   };
   const support = {
     hitStatus: "換一位農友",
@@ -370,12 +385,25 @@ function testGameControllerIntegration() {
     showPrevious() {},
   };
 
-  const game = app.createGame({ version: "v-test", holes, nodes, support });
+  const game = app.createGame({
+    version: "v-test",
+    holes,
+    nodes,
+    support,
+    messages: {
+      earlyFinish: "今天做得很好！",
+    },
+  });
   game.init();
   nodes.startButton.dispatch("click");
 
   assert.equal(nodes.version.textContent, "版本 v-test");
   assert.equal(global.document.body.classList.contains("is-playing"), true);
+  assert.equal(nodes.careModeToggle.disabled, true);
+  assert.equal(nodes.finishButton.disabled, false);
+  nodes.careModeToggle.checked = true;
+  nodes.careModeToggle.dispatch("change");
+  assert.equal(nodes.careModeToggle.checked, false);
   assert.equal(holes.filter((hole) => hole.classList.contains("is-snail")).length, 1);
 
   const activeIndex = holes.findIndex((hole) => hole.classList.contains("is-snail"));
@@ -385,6 +413,7 @@ function testGameControllerIntegration() {
 
   nodes.pauseButton.dispatch("click");
   assert.equal(nodes.pauseButton.textContent, "繼續");
+  assert.equal(nodes.careModeToggle.disabled, true);
   assert.equal(holes.some((hole) => hole.classList.contains("is-snail")), false);
 
   nodes.startButton.dispatch("click");
@@ -401,6 +430,17 @@ function testGameControllerIntegration() {
     preventDefault() {},
   });
   assert.equal(nodes.score.textContent, "2");
+
+  nodes.finishButton.dispatch("click");
+  assert.equal(nodes.finishButton.disabled, true);
+  assert.equal(nodes.encouragementDialog.open, true);
+  assert.equal(
+    nodes.encouragementText.textContent,
+    "今天做得很好！"
+  );
+  assert.match(nodes.status.textContent, /今天先到這裡/);
+  nodes.encouragementClose.dispatch("click");
+  assert.equal(nodes.encouragementDialog.open, false);
 }
 
 async function run() {

@@ -106,14 +106,12 @@
     }
 
     function setMode(nextModeKey) {
-      if (!gameModes[nextModeKey]) {
+      if (!gameModes[nextModeKey] || running) {
         return false;
       }
 
       modeKey = nextModeKey;
-      if (!running) {
-        timeLeft = getModeSettings().roundSeconds;
-      }
+      timeLeft = getModeSettings().roundSeconds;
       return true;
     }
 

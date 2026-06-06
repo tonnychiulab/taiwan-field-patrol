@@ -1,5 +1,8 @@
 (function bootstrap(app) {
-  const gameVersion = "v0.13.0";
+  const gameVersion = "v0.13.2";
+  const gameMessages = {
+    earlyFinish: "今天辛苦了，休息一下吧！",
+  };
   const regionPack = app.regions.yilan;
 
   document.querySelector("#keyboardHint").textContent = app.getGameInputHint();
@@ -35,6 +38,7 @@
 
   const game = app.createGame({
     version: gameVersion,
+    messages: gameMessages,
     holes: Array.from(document.querySelectorAll(".hole")),
     support: farmerSupport,
     nodes: {
@@ -47,11 +51,15 @@
       rewardNote: document.querySelector("#rewardNote"),
       startButton: document.querySelector("#startButton"),
       pauseButton: document.querySelector("#pauseButton"),
+      finishButton: document.querySelector("#finishButton"),
       supportPrev: document.querySelector("#farmerPrev"),
       supportNext: document.querySelector("#farmerNext"),
       patrolArea: document.querySelector("#patrolArea"),
       version: document.querySelector("#version"),
       careModeToggle: document.querySelector("#careModeToggle"),
+      encouragementDialog: document.querySelector("#encouragementDialog"),
+      encouragementText: document.querySelector("#encouragementText"),
+      encouragementClose: document.querySelector("#encouragementClose"),
     },
   });
 

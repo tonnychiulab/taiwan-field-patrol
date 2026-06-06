@@ -6,10 +6,10 @@
     <title>&#x798F;&#x58FD;&#x87BA;&#x5F88;&#x591A;</title>
     <meta name="theme-color" content="#d9e6b7" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <link rel="stylesheet" href="./style.css?v=0.13.0" />
-    <link rel="stylesheet" href="./sidebar.css?v=0.13.0" />
-    <link rel="stylesheet" href="./field.css?v=0.13.0" />
-    <link rel="stylesheet" href="./mobile.css?v=0.13.0" />
+    <link rel="stylesheet" href="./style.css?v=0.13.2" />
+    <link rel="stylesheet" href="./sidebar.css?v=0.13.2" />
+    <link rel="stylesheet" href="./field.css?v=0.13.2" />
+    <link rel="stylesheet" href="./mobile.css?v=0.13.2" />
   </head>
   <body>
     <main class="game">
@@ -155,6 +155,9 @@
                 <button id="pauseButton" class="secondary-button" type="button" disabled>
                   &#x66AB;&#x505C;
                 </button>
+                <button id="finishButton" class="secondary-button" type="button" disabled>
+                  今天收工
+                </button>
                 <label class="care-switch" for="careModeToggle">
                   <span class="care-switch-label">&#x9577;&#x8F29;&#x6A21;&#x5F0F;</span>
                   <span class="care-switch-note">&#x653E;&#x6162;&#x7BC0;&#x594F;</span>
@@ -253,13 +256,18 @@
       </section>
     </main>
 
-    <script src="./regions/yilan.js?v=0.13.0"></script>
-    <script src="./farmer-support.js?v=0.13.0"></script>
-    <script src="./game-storage.js?v=0.13.0"></script>
-    <script src="./game-engine.js?v=0.13.0"></script>
-    <script src="./game-input.js?v=0.13.0"></script>
-    <script src="./game-core.js?v=0.13.0"></script>
-    <script src="./sidebar-tabs.js?v=0.13.0"></script>
-    <script src="./game.js?v=0.13.0"></script>
+    <dialog class="encouragement-dialog" id="encouragementDialog" aria-labelledby="encouragementText">
+      <p id="encouragementText">今天辛苦了，休息一下吧！</p>
+      <button id="encouragementClose" type="button">好</button>
+    </dialog>
+
+    <script src="./regions/yilan.js?v=0.13.2"></script>
+    <script src="./farmer-support.js?v=0.13.2"></script>
+    <script src="./game-storage.js?v=0.13.2"></script>
+    <script src="./game-engine.js?v=0.13.2"></script>
+    <script src="./game-input.js?v=0.13.2"></script>
+    <script src="./game-core.js?v=0.13.2"></script>
+    <script src="./sidebar-tabs.js?v=0.13.2"></script>
+    <script src="./game.js?v=0.13.2"></script>
   </body>
 </html>

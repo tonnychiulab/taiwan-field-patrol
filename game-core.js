@@ -1,7 +1,11 @@
 (function defineGameCore(app) {
   "use strict";
 
-  function createGame({ version, holes, nodes, support }) {
+  function createGame({ version, holes, nodes, support, messages }) {
+    const copy = {
+      earlyFinish: "今天辛苦了，休息一下吧！",
+      ...messages,
+    };
     const storage = app.createGameStorage();
     const savedState = storage.load();
     const engine = app.createGameEngine({
@@ -47,14 +51,18 @@
 
       if (!state.running) {
         nodes.pauseButton.disabled = true;
+        nodes.finishButton.disabled = true;
         nodes.pauseButton.textContent = "暫停";
         nodes.patrolArea.disabled = false;
+        nodes.careModeToggle.disabled = false;
         return;
       }
 
       nodes.pauseButton.disabled = false;
+      nodes.finishButton.disabled = false;
       nodes.pauseButton.textContent = state.paused ? "繼續" : "暫停";
       nodes.patrolArea.disabled = true;
+      nodes.careModeToggle.disabled = true;
     }
 
     function scheduleNextSnail() {
@@ -72,11 +80,21 @@
     }
 
     function syncModeState() {
-      engine.setMode(nodes.careModeToggle.checked ? "care" : "normal");
+      const modeChanged = engine.setMode(
+        nodes.careModeToggle.checked ? "care" : "normal"
+      );
+      if (!modeChanged) {
+        nodes.careModeToggle.checked = engine.getState().modeKey === "care";
+      }
       render();
     }
 
-    function finishRound(result) {
+    function showEncouragement() {
+      nodes.encouragementText.textContent = copy.earlyFinish;
+      nodes.encouragementDialog.showModal();
+    }
+
+    function finishRound(result, earlyFinish) {
       document.body.classList.remove("is-playing");
       stopTimers();
       clearBoard();
@@ -84,11 +102,16 @@
       render();
 
       const subregion = support.getCurrentSubregion();
-      nodes.status.textContent = `收工，你今天打回去了 ${result.score} 隻福壽螺。`;
-      nodes.rewardNote.textContent = `完成 ${subregion.name} 巡田：今天守回 ${result.score} 隻，這一區已陪你巡了 ${result.patrolCount} 次。`;
+      nodes.status.textContent = earlyFinish
+        ? `今天先到這裡，你已經打回去了 ${result.score} 隻福壽螺。`
+        : `收工，你今天打回去了 ${result.score} 隻福壽螺。`;
+      nodes.rewardNote.textContent = `${subregion.name} 今天守回 ${result.score} 隻，這一區已陪你巡了 ${result.patrolCount} 次。`;
       nodes.startButton.disabled = false;
       nodes.startButton.textContent = "再巡一輪";
       updateControlState();
+      if (earlyFinish) {
+        showEncouragement();
+      }
     }
 
     function startTimers() {
@@ -98,9 +121,16 @@
         render();
 
         if (result.ended) {
-          finishRound(result);
+          finishRound(result, false);
         }
       }, 1000);
+    }
+
+    function finishEarly() {
+      const result = engine.finishRound();
+      if (result.ended) {
+        finishRound(result, true);
+      }
     }
 
     function startGame() {
@@ -231,6 +261,10 @@
       });
       nodes.startButton.addEventListener("click", handleStartButtonClick);
       nodes.pauseButton.addEventListener("click", togglePause);
+      nodes.finishButton.addEventListener("click", finishEarly);
+      nodes.encouragementClose.addEventListener("click", () => {
+        nodes.encouragementDialog.close();
+      });
       nodes.careModeToggle.addEventListener("change", syncModeState);
       nodes.supportPrev?.addEventListener("click", support.showPrevious);
       nodes.supportNext?.addEventListener("click", support.showNext);
