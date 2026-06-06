@@ -34,6 +34,23 @@
       shortenText,
     };
 
+    function updateNavigationState() {
+      const total = farmers.length;
+      if (!total) {
+        nodes.count.textContent = "目前沒有可輪播資料";
+        nodes.prev.disabled = true;
+        nodes.next.disabled = true;
+        return;
+      }
+
+      const currentNumber = currentFarmerIndex >= 0 ? currentFarmerIndex + 1 : 1;
+      nodes.count.textContent =
+        total === 1 ? "本區目前先顯示這 1 位" : `第 ${currentNumber} / ${total} 位`;
+      const disabled = total <= 1;
+      nodes.prev.disabled = disabled;
+      nodes.next.disabled = disabled;
+    }
+
     function renderFarmerCard(farmer) {
       nodes.name.textContent = farmer.name;
       nodes.products.textContent = `主力作物：${shortenText(farmer.products, "以官方資料為準", 38)}`;
@@ -46,6 +63,7 @@
         parts.push(`更新 ${farmer.effectiveDate}`);
       }
       nodes.status.textContent = parts.join("｜");
+      updateNavigationState();
     }
 
     function renderFallback() {
@@ -58,6 +76,7 @@
       nodes.map.href = fallback.mapUrl;
       nodes.source.href = region.source.url;
       nodes.source.textContent = region.source.label;
+      updateNavigationState();
     }
 
     function getCurrentSubregion() {
@@ -107,6 +126,7 @@
 
     function rotate(forceNext = false) {
       if (!farmers.length) {
+        updateNavigationState();
         return;
       }
 
@@ -115,6 +135,24 @@
       }
 
       renderFarmerCard(farmers[currentFarmerIndex]);
+    }
+
+    function shiftCurrent(offset) {
+      if (!farmers.length) {
+        updateNavigationState();
+        return;
+      }
+
+      currentFarmerIndex = (currentFarmerIndex + offset + farmers.length) % farmers.length;
+      renderFarmerCard(farmers[currentFarmerIndex]);
+    }
+
+    function showPrevious() {
+      shiftCurrent(-1);
+    }
+
+    function showNext() {
+      shiftCurrent(1);
     }
 
     async function load() {
@@ -159,6 +197,8 @@
       hasRecommendations: () => farmers.length > 0,
       load,
       rotate,
+      showNext,
+      showPrevious,
       setSubregion,
       setupSubregions: populateSubregionOptions,
     };

@@ -1,5 +1,5 @@
 (function bootstrap(app) {
-  const gameVersion = "v0.10.3";
+  const gameVersion = "v0.11.0";
   const regionPack = app.regions.yilan;
 
   const farmerSupport = app.createFarmerSupport({
@@ -12,6 +12,9 @@
       location: document.querySelector("#farmerLocation"),
       tel: document.querySelector("#farmerTel"),
       status: document.querySelector("#farmerStatus"),
+      prev: document.querySelector("#farmerPrev"),
+      next: document.querySelector("#farmerNext"),
+      count: document.querySelector("#farmerCount"),
       map: document.querySelector("#farmerMap"),
       source: document.querySelector("#farmerSource"),
     },
@@ -31,6 +34,8 @@
       rewardNote: document.querySelector("#rewardNote"),
       startButton: document.querySelector("#startButton"),
       pauseButton: document.querySelector("#pauseButton"),
+      supportPrev: document.querySelector("#farmerPrev"),
+      supportNext: document.querySelector("#farmerNext"),
       patrolArea: document.querySelector("#patrolArea"),
       version: document.querySelector("#version"),
       careModeToggle: document.querySelector("#careModeToggle"),

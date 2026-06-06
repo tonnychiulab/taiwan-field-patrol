@@ -17,6 +17,35 @@
       hitWindow: 260,
     },
   };
+  const holeKeyMap = {
+    KeyQ: 0,
+    KeyW: 1,
+    KeyE: 2,
+    KeyA: 3,
+    KeyS: 4,
+    KeyD: 5,
+    KeyZ: 6,
+    KeyX: 7,
+    KeyC: 8,
+    Digit7: 0,
+    Digit8: 1,
+    Digit9: 2,
+    Digit4: 3,
+    Digit5: 4,
+    Digit6: 5,
+    Digit1: 6,
+    Digit2: 7,
+    Digit3: 8,
+    Numpad7: 0,
+    Numpad8: 1,
+    Numpad9: 2,
+    Numpad4: 3,
+    Numpad5: 4,
+    Numpad6: 5,
+    Numpad1: 6,
+    Numpad2: 7,
+    Numpad3: 8,
+  };
 
   function createGame({ version, holes, nodes, support }) {
     let score = 0;
@@ -256,6 +285,7 @@
       gamePaused = true;
       pausedByVisibility = false;
       stopTimers();
+      clearActiveHole();
       nodes.status.textContent = "先歇一下，等你準備好再繼續巡田。";
       nodes.startButton.disabled = false;
       nodes.startButton.textContent = "繼續遊戲";
@@ -270,6 +300,7 @@
       gamePaused = true;
       pausedByVisibility = true;
       stopTimers();
+      clearActiveHole();
       nodes.status.textContent = "畫面先切走了，已幫你暫停，回來再繼續巡田。";
       nodes.startButton.disabled = false;
       nodes.startButton.textContent = "繼續遊戲";
@@ -281,10 +312,6 @@
     }
 
     function handleKeydown(event) {
-      if (event.code !== "Space") {
-        return;
-      }
-
       const activeElement = document.activeElement;
       const isInteractiveTarget =
         activeElement &&
@@ -296,13 +323,24 @@
         return;
       }
 
-      event.preventDefault();
-      if (gameRunning) {
-        togglePause();
+      if (event.code === "Space") {
+        event.preventDefault();
+        if (gameRunning) {
+          togglePause();
+          return;
+        }
+
+        startGame(true);
         return;
       }
 
-      startGame(true);
+      const mappedHoleIndex = holeKeyMap[event.code];
+      if (typeof mappedHoleIndex !== "number") {
+        return;
+      }
+
+      event.preventDefault();
+      handleHit(holes[mappedHoleIndex], mappedHoleIndex);
     }
 
     function handleHit(hole, index) {
@@ -343,6 +381,8 @@
       nodes.startButton.addEventListener("click", handleStartButtonClick);
       nodes.pauseButton.addEventListener("click", togglePause);
       nodes.careModeToggle.addEventListener("change", syncModeState);
+      nodes.supportPrev?.addEventListener("click", support.showPrevious);
+      nodes.supportNext?.addEventListener("click", support.showNext);
       document.addEventListener("visibilitychange", () => {
         if (document.hidden) {
           pauseForVisibility();
