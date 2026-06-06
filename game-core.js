@@ -1,141 +1,36 @@
 (function defineGameCore(app) {
-  const bestScoreKey = "fushouluo-henduo-best-score";
-  const areaRecordsKey = "fushouluo-henduo-area-records-v1";
-  const gameModes = {
-    normal: {
-      roundSeconds: 30,
-      minDelay: 300,
-      maxDelay: 760,
-      randomRange: 120,
-      hitWindow: 160,
-    },
-    care: {
-      roundSeconds: 45,
-      minDelay: 620,
-      maxDelay: 1120,
-      randomRange: 180,
-      hitWindow: 260,
-    },
-  };
-  const holeKeyMap = {
-    KeyQ: 0,
-    KeyW: 1,
-    KeyE: 2,
-    KeyA: 3,
-    KeyS: 4,
-    KeyD: 5,
-    KeyZ: 6,
-    KeyX: 7,
-    KeyC: 8,
-    Digit7: 0,
-    Digit8: 1,
-    Digit9: 2,
-    Digit4: 3,
-    Digit5: 4,
-    Digit6: 5,
-    Digit1: 6,
-    Digit2: 7,
-    Digit3: 8,
-    Numpad7: 0,
-    Numpad8: 1,
-    Numpad9: 2,
-    Numpad4: 3,
-    Numpad5: 4,
-    Numpad6: 5,
-    Numpad1: 6,
-    Numpad2: 7,
-    Numpad3: 8,
-  };
+  "use strict";
 
   function createGame({ version, holes, nodes, support }) {
-    let score = 0;
-    let bestScore = loadBestScore();
-    let timeLeft = gameModes.normal.roundSeconds;
-    let activeHole = -1;
-    let lastHole = -1;
-    let gameRunning = false;
-    let gamePaused = false;
+    const storage = app.createGameStorage();
+    const savedState = storage.load();
+    const engine = app.createGameEngine({
+      holeCount: holes.length,
+      bestScore: savedState.bestScore,
+      areaRecords: savedState.areaRecords,
+      areaId: support.getCurrentSubregion().id,
+      recommendationEveryHits: support.rotateEveryHits,
+    });
+
     let pausedByVisibility = false;
     let tickTimer = 0;
     let spawnTimer = 0;
     let hitTimer = 0;
-    let hitsSinceFarmerSwap = 0;
-    let currentModeKey = "normal";
-    let areaRecords = loadAreaRecords();
-
-    function loadBestScore() {
-      try {
-        const saved = window.localStorage.getItem(bestScoreKey);
-        const parsed = Number(saved);
-        return Number.isInteger(parsed) && parsed >= 0 ? parsed : 0;
-      } catch {
-        return 0;
-      }
-    }
-
-    function saveBestScore(nextBestScore) {
-      try {
-        window.localStorage.setItem(bestScoreKey, String(nextBestScore));
-      } catch {
-        // Ignore storage failures so the round can still finish normally.
-      }
-    }
-
-    function createEmptyAreaRecord() {
-      return {
-        normalBest: 0,
-        careBest: 0,
-        rounds: 0,
-        totalHits: 0,
-      };
-    }
-
-    function loadAreaRecords() {
-      try {
-        const saved = window.localStorage.getItem(areaRecordsKey);
-        const parsed = JSON.parse(saved || "{}");
-        return parsed && typeof parsed === "object" ? parsed : {};
-      } catch {
-        return {};
-      }
-    }
-
-    function saveAreaRecords() {
-      try {
-        window.localStorage.setItem(areaRecordsKey, JSON.stringify(areaRecords));
-      } catch {
-        // Records are a nice-to-have reward layer; gameplay should not depend on storage.
-      }
-    }
-
-    function getAreaRecord() {
-      const subregion = support.getCurrentSubregion();
-      if (!areaRecords[subregion.id]) {
-        areaRecords[subregion.id] = createEmptyAreaRecord();
-      }
-      return areaRecords[subregion.id];
-    }
-
-    function getCurrentAreaBest() {
-      const record = getAreaRecord();
-      return currentModeKey === "care" ? record.careBest : record.normalBest;
-    }
 
     function render() {
-      nodes.score.textContent = String(score);
-      nodes.bestScore.textContent = String(bestScore);
-      nodes.areaBest.textContent = String(getCurrentAreaBest());
-      nodes.patrolCount.textContent = String(getAreaRecord().rounds);
-      nodes.time.textContent = String(timeLeft);
+      const state = engine.getState();
+      nodes.score.textContent = String(state.score);
+      nodes.bestScore.textContent = String(state.bestScore);
+      nodes.areaBest.textContent = String(state.areaBest);
+      nodes.patrolCount.textContent = String(state.patrolCount);
+      nodes.time.textContent = String(state.timeLeft);
     }
 
-    function clearActiveHole() {
-      if (activeHole < 0) {
-        return;
-      }
-
-      holes[activeHole].classList.remove("is-snail", "is-hit");
-      activeHole = -1;
+    function clearBoard() {
+      holes.forEach((hole) => {
+        hole.classList.remove("is-snail", "is-hit");
+      });
+      engine.clearActiveHole();
     }
 
     function stopTimers() {
@@ -148,7 +43,9 @@
     }
 
     function updateControlState() {
-      if (!gameRunning) {
+      const state = engine.getState();
+
+      if (!state.running) {
         nodes.pauseButton.disabled = true;
         nodes.pauseButton.textContent = "暫停";
         nodes.patrolArea.disabled = false;
@@ -156,222 +53,176 @@
       }
 
       nodes.pauseButton.disabled = false;
-      nodes.pauseButton.textContent = gamePaused ? "繼續" : "暫停";
+      nodes.pauseButton.textContent = state.paused ? "繼續" : "暫停";
       nodes.patrolArea.disabled = true;
     }
 
-    function getSpawnDelay() {
-      const settings = gameModes[currentModeKey];
-      const progress = (settings.roundSeconds - timeLeft) / settings.roundSeconds;
-      return Math.max(
-        settings.minDelay,
-        Math.floor(settings.maxDelay - progress * (settings.maxDelay - settings.minDelay) * 0.72)
+    function scheduleNextSnail() {
+      clearBoard();
+      const nextHole = engine.spawn();
+      if (nextHole < 0) {
+        return;
+      }
+
+      holes[nextHole].classList.add("is-snail");
+      spawnTimer = window.setTimeout(
+        scheduleNextSnail,
+        engine.getNextSpawnDelay()
       );
     }
 
-    function pickHole() {
-      clearActiveHole();
-
-      let nextHole = Math.floor(Math.random() * holes.length);
-      if (holes.length > 1) {
-        while (nextHole === lastHole) {
-          nextHole = Math.floor(Math.random() * holes.length);
-        }
-      }
-
-      activeHole = nextHole;
-      lastHole = nextHole;
-      holes[activeHole].classList.add("is-snail");
-
-      const nextDelay =
-        getSpawnDelay() + Math.floor(Math.random() * gameModes[currentModeKey].randomRange);
-      spawnTimer = window.setTimeout(pickHole, nextDelay);
-    }
-
     function syncModeState() {
-      currentModeKey = nodes.careModeToggle.checked ? "care" : "normal";
-      const settings = gameModes[currentModeKey];
-      if (!gameRunning) {
-        timeLeft = settings.roundSeconds;
-        render();
-      }
+      engine.setMode(nodes.careModeToggle.checked ? "care" : "normal");
+      render();
     }
 
-    function endGame() {
-      gameRunning = false;
-      gamePaused = false;
+    function finishRound(result) {
       document.body.classList.remove("is-playing");
       stopTimers();
-      clearActiveHole();
-      if (score > bestScore) {
-        bestScore = score;
-        saveBestScore(bestScore);
-      }
-      const record = getAreaRecord();
-      const bestKey = currentModeKey === "care" ? "careBest" : "normalBest";
-      record.rounds += 1;
-      record.totalHits += score;
-      if (score > record[bestKey]) {
-        record[bestKey] = score;
-      }
-      saveAreaRecords();
+      clearBoard();
+      storage.save(engine.getPersistence());
       render();
+
       const subregion = support.getCurrentSubregion();
-      nodes.status.textContent = `收工，你今天打回去了 ${score} 隻福壽螺。`;
-      nodes.rewardNote.textContent = `完成 ${subregion.name} 巡田：今天守回 ${score} 隻，這一區已陪你巡了 ${record.rounds} 次。`;
+      nodes.status.textContent = `收工，你今天打回去了 ${result.score} 隻福壽螺。`;
+      nodes.rewardNote.textContent = `完成 ${subregion.name} 巡田：今天守回 ${result.score} 隻，這一區已陪你巡了 ${result.patrolCount} 次。`;
       nodes.startButton.disabled = false;
       nodes.startButton.textContent = "再巡一輪";
       updateControlState();
     }
 
-    function startGame(resetRound = true) {
-      if (resetRound) {
-        syncModeState();
-      }
-      const settings = gameModes[currentModeKey];
-
-      if (resetRound) {
-        score = 0;
-        timeLeft = settings.roundSeconds;
-        hitsSinceFarmerSwap = 0;
-        lastHole = -1;
-        support.rotate(true);
-        nodes.rewardNote.textContent = `今天巡 ${support.getCurrentSubregion().name}，慢慢打也算一場正式守田。`;
-      }
-
-      gameRunning = true;
-      gamePaused = false;
-      document.body.classList.add("is-playing");
-      render();
-      nodes.status.textContent = resetRound
-        ? currentModeKey === "care"
-          ? "長輩模式已開，慢慢巡田，把福壽螺一隻隻請回去。"
-          : "開打，田埂裡的福壽螺又冒出來了。"
-        : "繼續巡田，慢慢來也沒關係。";
-      nodes.startButton.disabled = true;
-      stopTimers();
-
-      if (activeHole < 0) {
-        pickHole();
-      } else {
-        const nextDelay =
-          getSpawnDelay() + Math.floor(Math.random() * gameModes[currentModeKey].randomRange);
-        spawnTimer = window.setTimeout(pickHole, nextDelay);
-      }
-
+    function startTimers() {
+      scheduleNextSnail();
       tickTimer = window.setInterval(() => {
-        timeLeft -= 1;
+        const result = engine.tick();
         render();
 
-        if (timeLeft <= 0) {
-          endGame();
+        if (result.ended) {
+          finishRound(result);
         }
       }, 1000);
+    }
 
+    function startGame() {
+      syncModeState();
+      engine.setArea(support.getCurrentSubregion().id);
+      engine.start();
+      pausedByVisibility = false;
+      support.rotate(true);
+      nodes.rewardNote.textContent = `今天巡 ${support.getCurrentSubregion().name}，慢慢打也算一場正式守田。`;
+      document.body.classList.add("is-playing");
+      render();
+
+      nodes.status.textContent =
+        engine.getState().modeKey === "care"
+          ? "長輩模式已開，慢慢巡田，把福壽螺一隻隻請回去。"
+          : "開打，田埂裡的福壽螺又冒出來了。";
+      nodes.startButton.disabled = true;
+      stopTimers();
+      clearBoard();
+      startTimers();
+      updateControlState();
+    }
+
+    function resumeGame() {
+      if (!engine.resume()) {
+        return;
+      }
+
+      pausedByVisibility = false;
+      document.body.classList.add("is-playing");
+      nodes.status.textContent = "繼續巡田，慢慢來也沒關係。";
+      nodes.startButton.disabled = true;
+      stopTimers();
+      clearBoard();
+      startTimers();
+      render();
+      updateControlState();
+    }
+
+    function pauseGame(visibilityPause) {
+      if (!engine.pause()) {
+        return;
+      }
+
+      pausedByVisibility = visibilityPause;
+      stopTimers();
+      clearBoard();
+      nodes.status.textContent = visibilityPause
+        ? "畫面先切走了，已幫你暫停，回來再繼續巡田。"
+        : "先歇一下，等你準備好再繼續巡田。";
+      nodes.startButton.disabled = false;
+      nodes.startButton.textContent = "繼續遊戲";
+      render();
       updateControlState();
     }
 
     function togglePause() {
-      if (!gameRunning) {
+      const state = engine.getState();
+      if (!state.running) {
         return;
       }
 
-      if (gamePaused) {
-        pausedByVisibility = false;
-        startGame(false);
+      if (state.paused) {
+        resumeGame();
         return;
       }
 
-      gamePaused = true;
-      pausedByVisibility = false;
-      stopTimers();
-      clearActiveHole();
-      nodes.status.textContent = "先歇一下，等你準備好再繼續巡田。";
-      nodes.startButton.disabled = false;
-      nodes.startButton.textContent = "繼續遊戲";
-      updateControlState();
-    }
-
-    function pauseForVisibility() {
-      if (!gameRunning || gamePaused) {
-        return;
-      }
-
-      gamePaused = true;
-      pausedByVisibility = true;
-      stopTimers();
-      clearActiveHole();
-      nodes.status.textContent = "畫面先切走了，已幫你暫停，回來再繼續巡田。";
-      nodes.startButton.disabled = false;
-      nodes.startButton.textContent = "繼續遊戲";
-      updateControlState();
+      pauseGame(false);
     }
 
     function handleStartButtonClick() {
-      startGame(!gamePaused);
-    }
-
-    function handleKeydown(event) {
-      const activeElement = document.activeElement;
-      const isInteractiveTarget =
-        activeElement &&
-        (activeElement.tagName === "BUTTON" ||
-          activeElement.tagName === "SELECT" ||
-          activeElement.tagName === "INPUT");
-
-      if (isInteractiveTarget) {
+      if (engine.getState().paused) {
+        resumeGame();
         return;
       }
 
-      if (event.code === "Space") {
-        event.preventDefault();
-        if (gameRunning) {
-          togglePause();
-          return;
-        }
-
-        startGame(true);
-        return;
-      }
-
-      const mappedHoleIndex = holeKeyMap[event.code];
-      if (typeof mappedHoleIndex !== "number") {
-        return;
-      }
-
-      event.preventDefault();
-      handleHit(holes[mappedHoleIndex], mappedHoleIndex);
+      startGame();
     }
 
     function handleHit(hole, index) {
-      if (
-        !gameRunning ||
-        gamePaused ||
-        activeHole !== index ||
-        hole.classList.contains("is-hit")
-      ) {
+      if (hole.classList.contains("is-hit")) {
         return;
       }
 
-      score += 1;
-      hitsSinceFarmerSwap += 1;
+      const result = engine.hit(index);
+      if (!result.accepted) {
+        return;
+      }
+
       render();
       hole.classList.remove("is-snail");
       hole.classList.add("is-hit");
 
-      if (support.hasRecommendations() && hitsSinceFarmerSwap >= support.rotateEveryHits) {
-        hitsSinceFarmerSwap = 0;
+      if (support.hasRecommendations() && result.shouldRotate) {
         support.rotate(true);
         nodes.status.textContent = support.hitStatus;
       } else {
         nodes.status.textContent = "打中了，繼續巡田。";
       }
 
+      window.clearTimeout(hitTimer);
       hitTimer = window.setTimeout(() => {
-        if (activeHole === index) {
-          clearActiveHole();
-        }
-      }, gameModes[currentModeKey].hitWindow);
+        hole.classList.remove("is-hit");
+      }, result.hitWindow);
+    }
+
+    function handleAreaChange() {
+      support.setSubregion(nodes.patrolArea.value);
+      engine.setArea(support.getCurrentSubregion().id);
+      nodes.rewardNote.textContent = `今天巡 ${support.getCurrentSubregion().name}，完成後會留下本區紀錄。`;
+      render();
+    }
+
+    function handleVisibilityChange() {
+      if (document.hidden) {
+        pauseGame(true);
+        return;
+      }
+
+      if (pausedByVisibility && engine.getState().paused) {
+        nodes.status.textContent = "你回來了，按繼續就能接著巡田。";
+      }
     }
 
     function init() {
@@ -383,33 +234,34 @@
       nodes.careModeToggle.addEventListener("change", syncModeState);
       nodes.supportPrev?.addEventListener("click", support.showPrevious);
       nodes.supportNext?.addEventListener("click", support.showNext);
-      document.addEventListener("visibilitychange", () => {
-        if (document.hidden) {
-          pauseForVisibility();
-          return;
-        }
+      nodes.patrolArea.addEventListener("change", handleAreaChange);
+      document.addEventListener("visibilitychange", handleVisibilityChange);
 
-        if (pausedByVisibility && gamePaused) {
-          nodes.status.textContent = "你回來了，按繼續就能接著巡田。";
-        }
-      });
-      nodes.patrolArea.addEventListener("change", () => {
-        support.setSubregion(nodes.patrolArea.value);
-        nodes.rewardNote.textContent = `今天巡 ${support.getCurrentSubregion().name}，完成後會留下本區紀錄。`;
-        render();
-      });
-      document.addEventListener("keydown", handleKeydown);
+      app
+        .createGameInput({
+          target: document,
+          onSpace: () => {
+            const state = engine.getState();
+            if (state.running) {
+              togglePause();
+            } else {
+              startGame();
+            }
+          },
+          onHole: (index) => handleHit(holes[index], index),
+        })
+        .bind();
+
       nodes.version.textContent = `版本 ${version}`;
       support.setupSubregions();
+      engine.setArea(support.getCurrentSubregion().id);
       syncModeState();
       updateControlState();
       render();
       support.load();
     }
 
-    return {
-      init,
-    };
+    return { init };
   }
 
   app.createGame = createGame;
