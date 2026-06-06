@@ -25,7 +25,7 @@
 - `game.js`：查找 DOM、選擇 region pack、組裝並啟動遊戲。
 - `game-engine.js`：純玩法狀態與規則；不得依賴 DOM、`window` 計時器或 `localStorage`。
 - `game-core.js`：DOM 呈現、計時器、事件與各模組協調。
-- `game-input.js`：鍵盤與數字鍵盤對九宮格的映射。
+- `game-input.js`：鍵盤配置的單一來源，負責九宮格映射與畫面提示。
 - `game-storage.js`：本機紀錄讀寫與失敗容錯。
 - `farmer-support.js`：小農資料載入、篩選、輪播與地圖連結。
 - `regions/*.js`：地區公開資料來源、欄位轉換與子區域設定。
@@ -68,7 +68,7 @@ git diff --check
 
 - 開始、打擊、計分、回合結束。
 - 暫停、繼續、切到背景自動暫停。
-- `QWE / ASD / ZXC`、數字列與數字鍵盤。
+- `game-input.js` 定義的所有字母鍵、數字列與數字鍵盤配置。
 - 一般模式與長輩模式。
 - 切換巡田區域後的本區最高與巡田次數。
 - 舊版 `localStorage` 紀錄仍能載入。

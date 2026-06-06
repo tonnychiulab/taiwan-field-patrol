@@ -1,6 +1,19 @@
 (function bootstrap(app) {
-  const gameVersion = "v0.12.2";
+  const gameVersion = "v0.13.0";
   const regionPack = app.regions.yilan;
+
+  document.querySelector("#keyboardHint").textContent = app.getGameInputHint();
+
+  app
+    .createSidebarTabs({
+      tabs: Array.from(document.querySelectorAll('[role="tab"]')),
+      panels: [
+        document.querySelector("#patrolPanel"),
+        document.querySelector("#farmerPanel"),
+      ],
+      mediaQuery: window.matchMedia("(max-width: 900px)"),
+    })
+    .init();
 
   const farmerSupport = app.createFarmerSupport({
     region: regionPack,

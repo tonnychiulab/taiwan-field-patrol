@@ -11,6 +11,7 @@ require(path.join(__dirname, "..", "game-input.js"));
 require(path.join(__dirname, "..", "game-core.js"));
 require(path.join(__dirname, "..", "farmer-support.js"));
 require(path.join(__dirname, "..", "regions", "yilan.js"));
+require(path.join(__dirname, "..", "sidebar-tabs.js"));
 
 const app = global.window.Fushouluo;
 
@@ -123,6 +124,11 @@ function testKeyboardInput() {
   assert.deepEqual(hits, [0, 8]);
   assert.equal(toggles, 1);
   assert.equal(prevented, 3);
+  assert.equal(app.holeKeyMap.KeyQ, 0);
+  assert.equal(app.holeKeyMap.Digit5, 4);
+  assert.equal(app.holeKeyMap.Numpad3, 8);
+  assert.match(app.getGameInputHint(), /^快速鍵：/);
+  assert.match(app.getGameInputHint(), /數字鍵/);
 }
 
 function createClassList() {
@@ -137,10 +143,14 @@ function createClassList() {
 function createNode() {
   const listeners = {};
   const children = [];
+  const attributes = {};
   return {
     checked: false,
     classList: createClassList(),
     disabled: false,
+    focused: false,
+    hidden: false,
+    tabIndex: 0,
     textContent: "",
     value: "plain",
     append(child) {
@@ -149,10 +159,61 @@ function createNode() {
     addEventListener(type, listener) {
       listeners[type] = listener;
     },
+    focus() {
+      this.focused = true;
+    },
+    getAttribute(name) {
+      return attributes[name];
+    },
+    setAttribute(name, value) {
+      attributes[name] = String(value);
+    },
     dispatch(type, event) {
       listeners[type](event || { target: this });
     },
   };
+}
+
+function testSidebarTabs() {
+  const tabs = [createNode(), createNode()];
+  const panels = [createNode(), createNode()];
+  let mediaListener = null;
+  const mediaQuery = {
+    matches: false,
+    addEventListener(_type, listener) {
+      mediaListener = listener;
+    },
+  };
+  const sidebarTabs = app.createSidebarTabs({ tabs, panels, mediaQuery });
+
+  sidebarTabs.init();
+  assert.equal(tabs[0].getAttribute("aria-selected"), "true");
+  assert.equal(tabs[1].tabIndex, -1);
+  assert.equal(panels[0].hidden, false);
+  assert.equal(panels[1].hidden, true);
+  assert.equal(panels[0].getAttribute("role"), "tabpanel");
+
+  tabs[0].dispatch("keydown", {
+    key: "ArrowRight",
+    preventDefault() {},
+  });
+  assert.equal(tabs[1].getAttribute("aria-selected"), "true");
+  assert.equal(tabs[1].focused, true);
+  assert.equal(panels[0].hidden, true);
+  assert.equal(panels[1].hidden, false);
+
+  tabs[1].dispatch("keydown", {
+    key: "Home",
+    preventDefault() {},
+  });
+  assert.equal(tabs[0].getAttribute("aria-selected"), "true");
+
+  mediaQuery.matches = true;
+  mediaListener();
+  assert.equal(panels[0].hidden, false);
+  assert.equal(panels[1].hidden, false);
+  assert.equal(panels[0].getAttribute("role"), "region");
+  assert.equal(panels[1].getAttribute("role"), "region");
 }
 
 function createFarmerNodes() {
@@ -347,6 +408,7 @@ async function run() {
   testEnginePauseAndMode();
   testStorageFallbackAndSave();
   testKeyboardInput();
+  testSidebarTabs();
   testYilanNormalization();
   await testFarmerSubregionRefresh();
   testGameControllerIntegration();

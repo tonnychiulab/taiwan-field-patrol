@@ -29,8 +29,9 @@ GitHub Pages 使用 repository root 發布，因為專案入口就是 `index.htm
 - `game.js`：入口檔，只負責選擇目前地區包、查 DOM、啟動遊戲。
 - `game-engine.js`：不依賴畫面的純玩法核心，管理回合、分數、出螺、打擊判定與區域紀錄。
 - `game-core.js`：畫面與計時控制器，負責把玩法核心接到 DOM、動畫與小農推薦。
-- `game-input.js`：鍵盤與數字鍵盤的九宮格輸入。
+- `game-input.js`：集中定義鍵盤與數字鍵盤的九宮格配置，並產生按鍵映射與畫面提示。
 - `game-storage.js`：最高分與區域紀錄的本機儲存。
+- `sidebar-tabs.js`：桌機右欄的無障礙分頁與鍵盤操作；手機版維持完整直排。
 - `farmer-support.js`：小農推薦卡流程，包含抓資料、輪播、Google 地圖連結、失敗 fallback。
 - `regions/yilan.js`：第一個 region pack，定義宜蘭資料來源、欄位轉換、顯示文字與地圖連結。
 - `style.css`、`sidebar.css`、`field.css`、`mobile.css`：共用、側欄、田區與手機版樣式。

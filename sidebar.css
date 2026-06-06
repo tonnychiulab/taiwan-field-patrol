@@ -13,6 +13,45 @@
   transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
 }
 
+.sidebar-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 6px;
+  border: 1px solid rgba(83, 61, 35, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 251, 240, 0.72);
+}
+
+.sidebar-tab {
+  min-height: 46px;
+  border: 0;
+  border-radius: 13px;
+  padding: 9px 14px;
+  background: transparent;
+  color: #5d5039;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.sidebar-tab[aria-selected="true"] {
+  background: linear-gradient(180deg, #719f4a, #527e31);
+  color: #fffef7;
+  box-shadow:
+    0 8px 16px rgba(69, 107, 47, 0.16),
+    inset 0 -3px 0 rgba(42, 67, 24, 0.24);
+}
+
+.sidebar-tab:focus-visible {
+  outline: 3px solid rgba(185, 92, 46, 0.5);
+  outline-offset: 2px;
+}
+
+.sidebar-panel[hidden] {
+  display: none;
+}
+
 .secondary-button {
   border: 1px solid rgba(83, 61, 35, 0.14);
   border-radius: 999px;
